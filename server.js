@@ -1,23 +1,12 @@
 const grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
-const path = require('path');
 const {v4: uuidv4} = require('uuid');
+const { patientProto, vitalProto, alertProto, server} = require('./services');
+const {logMessage} = require("./logger");
 
 // In-memory storage
 const patients = {};
 const vitals = {};
 const alerts = {};
-
-const loadProto = (file) => {
-    const PROTO_PATH = path.join(__dirname, 'protos', file);
-    const packageDef = protoLoader.loadSync(PROTO_PATH);
-    return grpc.loadPackageDefinition(packageDef);
-}
-
-// PatientService implementation
-const patientProto = loadProto('PatientService.proto').patient;
-const vitalProto = loadProto('VitalService.proto').vital;
-const alertProto = loadProto('AlertService.proto').alert;
 
 // gRPC server
 const grpcServer = new grpc.Server();
@@ -42,6 +31,8 @@ const CheckVitals = (call, callback) => {
             message: response.message,
             timestamp: Date.now()
         });
+        // Log the alert
+        logMessage(`ALERT: ${JSON.stringify(alerts[patientId])}`);
     }
 
     callback(null, response);
@@ -57,6 +48,8 @@ const RegisterPatient = (call, callback) => {
     patients[id] = newPatient;
     vitals[id] = null;
     alerts[id] = [];
+    // Log the alert
+    logMessage(`Registering Patient: ${JSON.stringify(newPatient)}`);
     callback(null, {id, message: "Patient registered successfully"});
 }
 const GetAllPatients = (_, callback) => {
@@ -75,6 +68,8 @@ const RecordVitals = (call, callback) => {
 
     const data = {...call.request, timestamp: Date.now()};
     vitals[data.patientId] = data;
+
+    logMessage(`Received vitals: ${JSON.stringify(data)}`);
     callback(null, {message: "Vitals recorded"});
 }
 const GetLatestVitals = (call, callback) => {
@@ -92,7 +87,7 @@ grpcServer.addService(patientProto.PatientService.service, {RegisterPatient, Get
 grpcServer.addService(vitalProto.VitalService.service, {RecordVitals, GetLatestVitals});
 
 // Start gRPC server
-grpcServer.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+grpcServer.bindAsync(server, grpc.ServerCredentials.createInsecure(), () => {
     grpcServer.start();
     console.log("gRPC server running on port 50051");
 });

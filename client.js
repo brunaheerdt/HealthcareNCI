@@ -1,29 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
 const path = require('path');
 const app = express();
+const { patientProto, vitalProto, alertProto, server } = require('./services');
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-const loadProto = (file) => {
-  const PROTO_PATH = path.join(__dirname, 'protos', file);
-  const packageDef = protoLoader.loadSync(PROTO_PATH);
-  return grpc.loadPackageDefinition(packageDef);
-}
-
-// PatientService implementation
-const patientProto = loadProto('PatientService.proto').patient;
-const vitalProto = loadProto('VitalService.proto').vital;
-const alertProto = loadProto('AlertService.proto').alert;
-
-const patientClient = new patientProto.PatientService('localhost:50051', grpc.credentials.createInsecure());
-const vitalClient = new vitalProto.VitalService('localhost:50051', grpc.credentials.createInsecure());
-const alertClient = new alertProto.AlertService('localhost:50051', grpc.credentials.createInsecure());
+const patientClient = new patientProto.PatientService(server, grpc.credentials.createInsecure());
+const vitalClient = new vitalProto.VitalService(server, grpc.credentials.createInsecure());
+const alertClient = new alertProto.AlertService(server, grpc.credentials.createInsecure());
 
 // Homepage: fetch all patients, their vitals, and alerts
 app.get('/', (req, res) => {
@@ -35,7 +24,6 @@ app.get('/', (req, res) => {
       return new Promise(resolve => {
         vitalClient.GetLatestVitals({ id: p.id }, (err1, vitals) => {
           alertClient.GetAlerts({ id: p.id }, (err2, alerts) => {
-            console.log(alerts)
             resolve({
               ...p,
               vitals: vitals || { heartRate: '-', temperature: '-', bloodPressure: '-' },
