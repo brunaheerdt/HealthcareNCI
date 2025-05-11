@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package vital;
+
+service VitalService {
+  rpc RecordVitals(VitalRequest) returns (VitalResponse);
+  rpc GetLatestVitals(PatientId) returns (VitalData);
+}
+
+message VitalRequest {
+  string patientId = 1;
+  float heartRate = 2;
+  float temperature = 3;
+  float bloodPressure = 4;
+}
+
+message VitalResponse {
+  string message = 1;
+}
+
+message VitalData {
+  float heartRate = 1;
+  float temperature = 2;
+  float bloodPressure = 3;
+  int64 timestamp = 4;
+}
+
+message PatientId {
+  string id = 1;
+}

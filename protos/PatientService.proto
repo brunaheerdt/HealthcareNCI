@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package patient;
+
+service PatientService {
+  rpc RegisterPatient(PatientRequest) returns (PatientResponse);
+  rpc GetAllPatients(Empty) returns (PatientList);
+}
+
+message PatientRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message PatientResponse {
+  string id = 1;
+  string message = 2;
+}
+
+message Patient {
+  string id = 1;
+  string name = 2;
+  int32 age = 3;
+}
+
+message PatientList {
+  repeated Patient patients = 1;
+}
+
+message Empty {}

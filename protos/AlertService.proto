@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package alert;
+
+service AlertService {
+  rpc CheckVitals(CheckRequest) returns (AlertResponse);
+  rpc GetAlerts(PatientId) returns (AlertList);
+}
+
+message CheckRequest {
+  string patientId = 1;
+  float heartRate = 2;
+  float temperature = 3;
+  float bloodPressure = 4;
+}
+
+message AlertResponse {
+  bool triggered = 1;
+  string message = 2;
+}
+
+message Alert {
+  string message = 1;
+  int64 timestamp = 2;
+}
+
+message AlertList {
+  repeated Alert alerts = 1;
+}
+
+message PatientId {
+  string id = 1;
+}
