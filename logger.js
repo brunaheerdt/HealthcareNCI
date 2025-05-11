@@ -10,7 +10,7 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
 
-// Function to log messages
+// Function to log messages in the log file
 const logMessage = (message) => {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] ${message}\n`;
