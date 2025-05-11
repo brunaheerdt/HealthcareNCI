@@ -9,7 +9,7 @@ This project is a Smart Healthcare System that uses gRPC for backend communicati
 - View all patients, their latest vitals, and alerts via a web interface.
 
 ## Prerequisites
-- Node.js (v14 or higher)
+- Node.js (v18 or higher)
 - npm (Node Package Manager)
 
 ## Installation
